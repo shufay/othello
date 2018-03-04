@@ -14,10 +14,6 @@ Player::Player(Side side) {
      * precalculating things, etc.) However, remember that you will only have
      * 30 seconds.
      */
-
-    /* TODO: Basic reference implementation, remove! */
-    this->side = side;
-    oppSide = (side == BLACK) ? WHITE : BLACK;
 }
 
 /*
@@ -44,51 +40,5 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
      * TODO: Implement how moves your AI should play here. You should first
      * process the opponent's opponents move before calculating your own move
      */
-    board.doMove(opponentsMove, oppSide);
-
-    bestMoveX = -1;
-    bestMoveY = -1;
-
-    miniMax(board, side, 0);
-
-    if (bestMoveX == -1 && bestMoveY == -1) {
-        return nullptr;
-    } else {
-        Move *bestMove = new Move(bestMoveX, bestMoveY);
-        board.doMove(bestMove, side);
-        return bestMove;
-    }
-}
-
-int Player::miniMax(Board *board, Side currSide, int depth) {
-    if (depth == 2) {
-        return board->count(side) - board->count(oppSide);
-    }
-    int bestScore = -100;
-    for (int i = 0; i < 8; i++) {
-        for (int j = 0; j < 8; j++) {
-            Move move(i, j);
-            if (board->checkMove(&move, currSide)) {
-                Board *newBoard = board->copy();
-                newBoard->doMove(&move, currSide);
-
-                int tempScore = miniMax(newBoard, (currSide == BLACK) ? WHITE : BLACK, depth + 1);
-                if (currSide == oppSide) tempScore *= -1;
-                if (tempScore > bestScore) {
-                    bestScore = tempScore;
-                    if (depth == 0) {
-                        bestMoveX = move.x;
-                        bestMoveY = move.y;
-                    }
-                }
-                delete newBoard;
-            }
-        }
-    }
-    if (currSide == oppSide) bestScore *= -1;
-    return bestScore;
-}
-
-void Player::setBoard(Board *board) {
-    this->board = *board;
+    return nullptr;
 }
