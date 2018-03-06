@@ -1,6 +1,6 @@
 #include "player.hpp"
 
-#define RECURSIVE_DEPTH 2
+#define RECURSIVE_DEPTH 6
 #define otherSide(x) (x == BLACK) ? WHITE : BLACK
 
 /*
@@ -44,16 +44,19 @@ Player::~Player() {
  * return nullptr.
  */
 Move *Player::doMove(Move *opponentsMove, int msLeft) {
+    testingMinimax = true;
+    // update board according to oppoent move
+    board->doMove(opponentsMove, opp_side);
+
     if(testingMinimax) {
         minimax_data minmaxedmove = getMinimaxMove(board, playerside, 0);
         Move *move = new Move(-1,-1);
         move->setX(minmaxedmove.move.getX());
         move->setY(minmaxedmove.move.getY());
+        board->doMove(move, side);
         return move;
     }
 
-    // update board according to oppoent move
-    board->doMove(opponentsMove, opp_side);
 
     // check if there are legal moves
     if (board->hasMoves(side))
