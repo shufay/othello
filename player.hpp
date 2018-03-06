@@ -2,11 +2,12 @@
 #define __PLAYER_H__
 
 #include <iostream>
+#include <vector>
+#include <algorithm>
 #include "common.hpp"
 #include "board.hpp"
 
-
-using namespace std;
+//using namespace std;
 
 struct minimax_data {
     Move move;
@@ -16,17 +17,21 @@ struct minimax_data {
 class Player {
 private:
     minimax_data getMinimaxMove(Board *board, Side side, int depth);
+    int getHeuristicWeighting(Board *board, Move *move);
+    Side side;
+    Side opp_side;
+    Board *board;
 
 public:
     Player(Side side);
     ~Player();
 
     Move *doMove(Move *opponentsMove, int msLeft);
+    void setBoard(Board *board);
 
     // Flag to tell if the player is running within the test_minimax context
     bool testingMinimax;
     Side playerside;
-    Board *board;
 };
 
 #endif

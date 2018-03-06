@@ -17,6 +17,10 @@ Player::Player(Side side) {
      * precalculating things, etc.) However, remember that you will only have
      * 30 seconds.
      */
+    this->side = side;
+    this->opp_side = (side == WHITE) ? BLACK : WHITE;
+    this->board = new Board();
+
 }
 
 /*
@@ -47,6 +51,53 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
         move->setY(minmaxedmove.move.getY());
         return move;
     }
+
+    // update board according to oppoent move
+    board->doMove(opponentsMove, opp_side);
+
+    // check if there are legal moves
+    if (board->hasMoves(side))
+    {
+        Board *board2;
+        vector<Move> moves;
+        Move *bestmove = new Move(0, 0);
+        int best = -1000;
+
+        // get valid moves
+        for (int i = 0; i < 8; i++)
+        {
+            for (int j = 0; j < 8; j++)
+            {
+                Move move(i, j);
+
+                if (board->checkMove(&move, side))
+                {
+                    moves.push_back(move);
+                }
+            }
+        }
+
+        // get best move - does this by maximizing the difference
+        // between stone(side) and stone(opp_side), with some weighting.
+        for (unsigned int k = 0; k < moves.size(); k++)
+        {
+            board2 = board->copy();
+            board2->doMove(&moves[k], side);
+
+            int count = getHeuristicWeighting(board2, &(moves[k]));
+            if (count > best)
+            {
+                best = count;
+                bestmove->setX(moves[k].getX());
+                bestmove->setY(moves[k].getY());
+            }
+            delete board2;
+        }
+
+        board->doMove(bestmove, side);
+        return bestmove;
+    }
+
     return nullptr;
 }
 
@@ -83,6 +134,34 @@ minimax_data Player::getMinimaxMove(Board *board, Side side, int depth) {
             }
         }
     }
-    cerr << depth << " " << retval.score << " " << retval.move.getX() << " " << retval.move.getY() << " " << endl;
     return retval;
+}
+
+void Player::setBoard(Board *board) {
+    this->board = board;
+}
+
+int Player::getHeuristicWeighting(Board *board, Move *move) {
+    int great[] = {0, 7};   // corners
+    int bad[] = {1, 6};     // edges next to corners
+
+    int x = move->getX();
+    int y = move->getY();
+
+    int count = board->count(side) - board->count(opp_side);
+
+    // weighting:
+    //      difference * 3 for corners
+    //      difference * -3 for edges next to corners
+    if ((find(great, great+2, x) != great+2) && (find(great, great+2, y) != great+2))
+    {
+        count *= 3;
+    }
+
+    else if (((find(bad, bad+2, x) != bad+2) && (find(great, great+2, y) != great+2)) ||
+        ((find(bad, bad+2, y) != bad+2) && (find(great, great+2, x) != great+2)))
+    {
+        count *= -3;
+    }
+    return count;
 }
