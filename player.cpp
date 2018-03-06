@@ -1,6 +1,6 @@
 #include "player.hpp"
 
-#define RECURSIVE_DEPTH 6
+#define RECURSIVE_DEPTH 2
 #define otherSide(x) (x == BLACK) ? WHITE : BLACK
 
 /*
@@ -11,7 +11,6 @@
 Player::Player(Side side) {
     // Will be set to true in test_minimax.cpp.
     testingMinimax = false;
-    playerside = side;
     /*
      * TODO: Do any initialization you need to do here (setting up the board,
      * precalculating things, etc.) However, remember that you will only have
@@ -47,16 +46,14 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
     testingMinimax = true;
     // update board according to oppoent move
     board->doMove(opponentsMove, opp_side);
-
     if(testingMinimax) {
-        minimax_data minmaxedmove = getMinimaxMove(board, playerside, 0);
+        minimax_data minmaxedmove = getMinimaxMove(board, side, 0);
         Move *move = new Move(-1,-1);
         move->setX(minmaxedmove.move.getX());
         move->setY(minmaxedmove.move.getY());
         board->doMove(move, side);
         return move;
     }
-
 
     // check if there are legal moves
     if (board->hasMoves(side))
@@ -111,24 +108,31 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
  * @param side the side that is currently being calculated
  * @param depth the current depth (0 to start)
  */
-minimax_data Player::getMinimaxMove(Board *board, Side side, int depth) {
+minimax_data Player::getMinimaxMove(Board *hypothetical_board, Side side, int depth) {
+    // std::cerr << "new call: " << (side==BLACK) << " " << depth << std::endl;
+    // hypothetical_board->print_board();
     if(depth == RECURSIVE_DEPTH) {
-        minimax_data retval = {Move(-1,-1), board->count(side) - board->count(otherSide(side))};
+        minimax_data retval = {Move(-1,-1), hypothetical_board->count(side) - hypothetical_board->count(otherSide(side))};
         return retval;
     }
     minimax_data retval = {Move(-1,-1), -65}; // An impossibly bad score
     for(int i = 0; i < 8; i++) {
         for (int j = 0; j < 8; j++) {
             Move testmove = Move(i, j);
-            if (board->checkMove(&testmove, side)) {
-                Board *next_board = board->copy();
+            if (hypothetical_board->checkMove(&testmove, side)) {
+                // std::cerr << "  Valid move at" << testmove.getX() << " " << testmove.getY() << std::endl;
+                Board *next_board = hypothetical_board->copy();
                 next_board->doMove(&testmove, side);
                 minimax_data opponentmove = getMinimaxMove(next_board, otherSide(side), depth+1);
-                if (opponentmove.move.getX() == -1 && opponentmove.move.getY() == -1) {
+
+                if (opponentmove.score == -65) {
                     opponentmove.score = next_board->count(side) - next_board->count(otherSide(side));
                     // If the opponent's move is -1,-1, then there are no valid moves. That means
                     // the game is over and the score after this round is the final score.
+                    // std::cerr << "  Found game end with " << opponentmove.score << std::endl;
+
                 }
+
                 delete next_board;
                 if (retval.score < -opponentmove.score) { // Negate; what's bad for opponent good for us
                     retval.score = -opponentmove.score;
@@ -137,6 +141,7 @@ minimax_data Player::getMinimaxMove(Board *board, Side side, int depth) {
             }
         }
     }
+    // std::cerr << "-------------------" << std::endl;
     return retval;
 }
 
