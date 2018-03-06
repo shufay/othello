@@ -1,4 +1,5 @@
 #include "board.hpp"
+#include <iostream>
 
 /*
  * Make a standard 8x8 othello board and initialize it to the standard setup.
@@ -177,4 +178,18 @@ void Board::setBoard(char data[]) {
             taken.set(i);
         }
     }
+}
+
+void Board::print_board() {
+    for (int y = 0; y < 8; y++) {
+        for (int x = 0; x < 8; x++) {
+            char c = '.';
+            if (occupied(x,y)) {
+                c = get(BLACK, x, y) ? 'b' : 'w';
+            }
+            cerr << c;
+        }
+        cerr << endl;
+    }
+    cerr << endl;
 }
