@@ -17,7 +17,7 @@ struct minimax_data {
 class Player {
 private:
     minimax_data getMinimaxMove(Board *board, Side side, int depth);
-    int getHeuristicWeighting(Board *board, Move *move);
+    int getHeuristicWeighting(Board *board, Side side);
     Side side;
     Side opp_side;
     Board *board;
