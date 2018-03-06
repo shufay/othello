@@ -1,5 +1,8 @@
 #include "player.hpp"
 
+#define RECURSIVE_DEPTH 6
+#define otherSide(x) (x == BLACK) ? WHITE : BLACK
+
 /*
  * Constructor for the player; initialize everything here. The side your AI is
  * on (BLACK or WHITE) is passed in as "side". The constructor must finish
@@ -8,7 +11,7 @@
 Player::Player(Side side) {
     // Will be set to true in test_minimax.cpp.
     testingMinimax = false;
-
+    playerside = side;
     /*
      * TODO: Do any initialization you need to do here (setting up the board,
      * precalculating things, etc.) However, remember that you will only have
@@ -24,6 +27,7 @@ Player::Player(Side side) {
  * Destructor for the player.
  */
 Player::~Player() {
+
 }
 
 /*
@@ -40,13 +44,19 @@ Player::~Player() {
  * return nullptr.
  */
 Move *Player::doMove(Move *opponentsMove, int msLeft) {
-    /*
-     * TODO: Implement how moves your AI should play here. You should first
-     * process the opponent's opponents move before calculating your own move
-     */
-
+    testingMinimax = true;
     // update board according to oppoent move
     board->doMove(opponentsMove, opp_side);
+
+    if(testingMinimax) {
+        minimax_data minmaxedmove = getMinimaxMove(board, playerside, 0);
+        Move *move = new Move(-1,-1);
+        move->setX(minmaxedmove.move.getX());
+        move->setY(minmaxedmove.move.getY());
+        board->doMove(move, side);
+        return move;
+    }
+
 
     // check if there are legal moves
     if (board->hasMoves(side))
@@ -55,9 +65,6 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
         vector<Move> moves;
         Move *bestmove = new Move(0, 0);
         int best = -1000;
-        
-        int great[] = {0, 7};   // corners
-        int bad[] = {1, 6};     // edges next to corners
 
         // get valid moves
         for (int i = 0; i < 8; i++)
@@ -73,37 +80,21 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
             }
         }
 
-        // get best move - does this by maximizing the difference 
+        // get best move - does this by maximizing the difference
         // between stone(side) and stone(opp_side), with some weighting.
         for (unsigned int k = 0; k < moves.size(); k++)
         {
             board2 = board->copy();
-            int x = moves[k].getX();
-            int y = moves[k].getY();
-
             board2->doMove(&moves[k], side);
-            int count = board2->count(side) - board2->count(opp_side);
 
-            // weighting:
-            //      difference * 3 for corners
-            //      difference * -3 for edges next to corners 
-            if ((find(great, great+2, x) != great+2) && (find(great, great+2, y) != great+2))
-            {
-                count *= 3;
-            }
-            
-            else if (((find(bad, bad+2, x) != bad+2) && (find(great, great+2, y) != great+2)) ||
-                ((find(bad, bad+2, y) != bad+2) && (find(great, great+2, x) != great+2)))
-            {
-                count *= -3;
-            }
-
+            int count = getHeuristicWeighting(board2, &(moves[k]));
             if (count > best)
             {
                 best = count;
                 bestmove->setX(moves[k].getX());
                 bestmove->setY(moves[k].getY());
             }
+            delete board2;
         }
 
         board->doMove(bestmove, side);
@@ -111,4 +102,69 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
     }
 
     return nullptr;
+}
+
+/**
+ * @brief determines the move that will leave the selected side with the most score after a
+ *      specified recursive depth defined above.
+ * @param board a pointer to the board. May be a hypothetical future board state.
+ * @param side the side that is currently being calculated
+ * @param depth the current depth (0 to start)
+ */
+minimax_data Player::getMinimaxMove(Board *board, Side side, int depth) {
+    if(depth == RECURSIVE_DEPTH) {
+        minimax_data retval = {Move(-1,-1), board->count(side) - board->count(otherSide(side))};
+        return retval;
+    }
+    minimax_data retval = {Move(-1,-1), -65}; // An impossibly bad score
+    for(int i = 0; i < 8; i++) {
+        for (int j = 0; j < 8; j++) {
+            Move testmove = Move(i, j);
+            if (board->checkMove(&testmove, side)) {
+                Board *next_board = board->copy();
+                next_board->doMove(&testmove, side);
+                minimax_data opponentmove = getMinimaxMove(next_board, otherSide(side), depth+1);
+                if (opponentmove.move.getX() == -1 && opponentmove.move.getY() == -1) {
+                    opponentmove.score = next_board->count(side) - next_board->count(otherSide(side));
+                    // If the opponent's move is -1,-1, then there are no valid moves. That means
+                    // the game is over and the score after this round is the final score.
+                }
+                delete next_board;
+                if (retval.score < -opponentmove.score) { // Negate; what's bad for opponent good for us
+                    retval.score = -opponentmove.score;
+                    retval.move = testmove;
+                }
+            }
+        }
+    }
+    return retval;
+}
+
+void Player::setBoard(Board *board) {
+    this->board = board;
+}
+
+int Player::getHeuristicWeighting(Board *board, Move *move) {
+    int great[] = {0, 7};   // corners
+    int bad[] = {1, 6};     // edges next to corners
+
+    int x = move->getX();
+    int y = move->getY();
+
+    int count = board->count(side) - board->count(opp_side);
+
+    // weighting:
+    //      difference * 3 for corners
+    //      difference * -3 for edges next to corners
+    if ((find(great, great+2, x) != great+2) && (find(great, great+2, y) != great+2))
+    {
+        count *= 3;
+    }
+
+    else if (((find(bad, bad+2, x) != bad+2) && (find(great, great+2, y) != great+2)) ||
+        ((find(bad, bad+2, y) != bad+2) && (find(great, great+2, x) != great+2)))
+    {
+        count *= -3;
+    }
+    return count;
 }

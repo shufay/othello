@@ -6,10 +6,18 @@
 #include <algorithm>
 #include "common.hpp"
 #include "board.hpp"
+
 //using namespace std;
+
+struct minimax_data {
+    Move move;
+    int score;
+};
 
 class Player {
 private:
+    minimax_data getMinimaxMove(Board *board, Side side, int depth);
+    int getHeuristicWeighting(Board *board, Move *move);
     Side side;
     Side opp_side;
     Board *board;
@@ -19,9 +27,11 @@ public:
     ~Player();
 
     Move *doMove(Move *opponentsMove, int msLeft);
+    void setBoard(Board *board);
 
     // Flag to tell if the player is running within the test_minimax context
     bool testingMinimax;
+    Side playerside;
 };
 
 #endif
