@@ -2,11 +2,17 @@
 #define __PLAYER_H__
 
 #include <iostream>
+#include <vector>
+#include <algorithm>
 #include "common.hpp"
 #include "board.hpp"
-using namespace std;
+//using namespace std;
 
 class Player {
+private:
+    Side side;
+    Side opp_side;
+    Board *board;
 
 public:
     Player(Side side);

@@ -14,6 +14,10 @@ Player::Player(Side side) {
      * precalculating things, etc.) However, remember that you will only have
      * 30 seconds.
      */
+    this->side = side;
+    this->opp_side = (side == WHITE) ? BLACK : WHITE;
+    this->board = new Board();
+
 }
 
 /*
@@ -40,5 +44,71 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
      * TODO: Implement how moves your AI should play here. You should first
      * process the opponent's opponents move before calculating your own move
      */
+
+    // update board according to oppoent move
+    board->doMove(opponentsMove, opp_side);
+
+    // check if there are legal moves
+    if (board->hasMoves(side))
+    {
+        Board *board2;
+        vector<Move> moves;
+        Move *bestmove = new Move(0, 0);
+        int best = -1000;
+        
+        int great[] = {0, 7};   // corners
+        int bad[] = {1, 6};     // edges next to corners
+
+        // get valid moves
+        for (int i = 0; i < 8; i++)
+        {
+            for (int j = 0; j < 8; j++)
+            {
+                Move move(i, j);
+
+                if (board->checkMove(&move, side))
+                {
+                    moves.push_back(move);
+                }
+            }
+        }
+
+        // get best move - does this by maximizing the difference 
+        // between stone(side) and stone(opp_side), with some weighting.
+        for (unsigned int k = 0; k < moves.size(); k++)
+        {
+            board2 = board->copy();
+            int x = moves[k].getX();
+            int y = moves[k].getY();
+
+            board2->doMove(&moves[k], side);
+            int count = board2->count(side) - board2->count(opp_side);
+
+            // weighting:
+            //      difference * 3 for corners
+            //      difference * -3 for edges next to corners 
+            if ((find(great, great+2, x) != great+2) && (find(great, great+2, y) != great+2))
+            {
+                count *= 3;
+            }
+            
+            else if (((find(bad, bad+2, x) != bad+2) && (find(great, great+2, y) != great+2)) ||
+                ((find(bad, bad+2, y) != bad+2) && (find(great, great+2, x) != great+2)))
+            {
+                count *= -3;
+            }
+
+            if (count > best)
+            {
+                best = count;
+                bestmove->setX(moves[k].getX());
+                bestmove->setY(moves[k].getY());
+            }
+        }
+
+        board->doMove(bestmove, side);
+        return bestmove;
+    }
+
     return nullptr;
 }
