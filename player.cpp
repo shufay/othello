@@ -53,7 +53,9 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
 /**
  * @brief determines the move that will leave the selected side with the most score after a
  *      specified recursive depth defined above.
- * @param board a pointer to the board. May be a hypothetical future board state
+ * @param board a pointer to the board. May be a hypothetical future board state.
+ * @param side the side that is currently being calculated
+ * @param depth the current depth (0 to start)
  */
 minimax_data Player::getMinimaxMove(Board *board, Side side, int depth) {
     if(depth == RECURSIVE_DEPTH) {
