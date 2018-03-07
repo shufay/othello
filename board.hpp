@@ -15,12 +15,13 @@ private:
     bool onBoard(int x, int y);
 
 public:
-    bool occupied(int x, int y);
-    bool get(Side side, int x, int y);
     Board();
     ~Board();
     Board *copy();
 
+    bool occupied(int x, int y);
+    bool get(Side side, int x, int y);
+    
     bool isDone();
     bool hasMoves(Side side);
     bool checkMove(Move *m, Side side);
@@ -30,6 +31,8 @@ public:
     int countWhite();
 
     void setBoard(char data[]);
+
+    void print_board();
 };
 
 #endif
