@@ -46,6 +46,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
     // testingMinimax = true;
     // update board according to oppoent move
     board->doMove(opponentsMove, opp_side);
+
     if(testingMinimax) {
         minimax_data minmaxedmove = getMinimaxMove(board, side, 0);
         Move *move = new Move(-1,-1);
@@ -59,7 +60,6 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
     if (board->hasMoves(side))
     {
         Board *board2;
-        vector<Move> moves;
         Move *bestmove = new Move(0, 0);
         int best = -1000;
 
@@ -72,26 +72,21 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
 
                 if (board->checkMove(&move, side))
                 {
-                    moves.push_back(move);
+                    board2 = board->copy();
+                    board2->doMove(&move, side);
+
+                    int count = getHeuristicWeighting(board2, side);
+
+                    if (count > best)
+                    {
+                        best = count;
+                        bestmove->setX(move.getX());
+                        bestmove->setY(move.getY());
+                    }
+
+                    delete board2;
                 }
             }
-        }
-
-        // get best move - does this by maximizing the difference
-        // between stone(side) and stone(opp_side), with some weighting.
-        for (unsigned int k = 0; k < moves.size(); k++)
-        {
-            board2 = board->copy();
-            board2->doMove(&moves[k], side);
-
-            int count = getHeuristicWeighting(board2, side);
-            if (count > best)
-            {
-                best = count;
-                bestmove->setX(moves[k].getX());
-                bestmove->setY(moves[k].getY());
-            }
-            delete board2;
         }
 
         board->doMove(bestmove, side);
@@ -152,14 +147,14 @@ void Player::setBoard(Board *board) {
 }
 
 int Player::getHeuristicWeighting(Board *board, Side side) {
-    int weights[8][8] = {{ 3,-2, 2, 2, 2, 2,-2, 3},
-                         {-2,-3, 1, 1, 1, 1,-3, 2},
-                         { 2, 1, 1, 1, 1, 1, 1, 2},
-                         { 2, 1, 1, 1, 1, 1, 1, 2},
-                         { 2, 1, 1, 1, 1, 1, 1, 2},
-                         { 2, 1, 1, 1, 1, 1, 1, 2},
-                         {-2,-3, 1, 1, 1, 1,-3, 2},
-                         { 3,-2, 2, 2, 2, 2,-2, 3}};
+    int weights[8][8] = {{ 30,-30, 20, 20, 20, 20,-30, 30},
+                         {-30,-30, 1, 1, 1, 1,-30, -30},
+                         { 20, 1, 1, 1, 1, 1, 1, 20},
+                         { 20, 1, 1, 1, 1, 1, 1, 20},
+                         { 20, 1, 1, 1, 1, 1, 1, 20},
+                         { 20, 1, 1, 1, 1, 1, 1, 20},
+                         {-30,-30, 1, 1, 1, 1,-30, -30},
+                         { 30,-30, 20, 20, 20, 20,-30, 30}};
 
     int count = 0;
     for(int x = 0; x < 8; x++) {
