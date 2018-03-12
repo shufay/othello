@@ -1,6 +1,6 @@
 #include "player.hpp"
 
-#define RECURSIVE_DEPTH 4
+#define RECURSIVE_DEPTH 3
 #define otherSide(x) (x == BLACK) ? WHITE : BLACK
 
 /*
@@ -16,7 +16,7 @@ Player::Player(Side side) {
      * precalculating things, etc.) However, remember that you will only have
      * 30 seconds.
      */
-    this->side = side;
+    this->start_side = side;
     this->opp_side = (side == WHITE) ? BLACK : WHITE;
     this->board = new Board();
 
@@ -48,17 +48,16 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
     board->doMove(opponentsMove, opp_side);
 
     if(testingMinimax) {
-        minimax_data minmaxedmove = getMinimaxMove(board, side, 0);
+        minimax_data minmaxedmove = getMinimaxMove(board, start_side, 0);
         Move *move = new Move(-1,-1);
         move->setX(minmaxedmove.move.getX());
         move->setY(minmaxedmove.move.getY());
-        board->doMove(move, side);
-        cerr << "(" << move->getX() << ", " << move->getY() << ")" << endl;
+        board->doMove(move, start_side);
         return move;
     }
 
     // check if there are legal moves
-    if (board->hasMoves(side))
+    if (board->hasMoves(start_side))
     {
         Board *board2;
         Move *bestmove = new Move(0, 0);
@@ -71,12 +70,12 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
             {
                 Move move(i, j);
 
-                if (board->checkMove(&move, side))
+                if (board->checkMove(&move, start_side))
                 {
                     board2 = board->copy();
-                    board2->doMove(&move, side);
+                    board2->doMove(&move, start_side);
 
-                    int count = getHeuristicWeighting(board2, side);
+                    int count = getHeuristicWeighting(board2, start_side);
 
                     if (count > best)
                     {
@@ -90,7 +89,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
             }
         }
 
-        board->doMove(bestmove, side);
+        board->doMove(bestmove, start_side);
         return bestmove;
     }
 
@@ -110,9 +109,9 @@ minimax_data Player::getMinimaxMove(Board *hypothetical_board, Side side, int de
     if(depth == RECURSIVE_DEPTH) {
         int score = Player::getHeuristicWeighting(hypothetical_board, side);
         minimax_data retval = {Move(-1,-1), score};
-        //cerr << "score: " << retval.score << endl;
         return retval;
     }
+
     minimax_data retval = {Move(-1,-1), -1000, -1000, 1000}; // An impossibly bad score
     
     for(int i = 0; i < 8; i++) {
@@ -123,48 +122,42 @@ minimax_data Player::getMinimaxMove(Board *hypothetical_board, Side side, int de
                 Board *next_board = hypothetical_board->copy();
                 next_board->doMove(&testmove, side);
                 minimax_data opponentmove = getMinimaxMove(next_board, otherSide(side), depth+1);
-                //cerr << "opponent score: " << opponentmove.score << endl;
                 delete next_board;
 /*
-                if ((side == this->side) && 
-                    (opponentmove.score > retval.alpha))
+                if (side == this->side && 
+                    opponentmove.score > retval.alpha)
                 {
-
                     retval.alpha = opponentmove.score;
                 }
 
-                else if ((side == otherSide(this->side)) &&
-                    (opponentmove.score < retval.beta))
+                else if (side == otherSide(this->side) && 
+                    opponentmove.score < retval.beta)
                 {
-
                     retval.beta = opponentmove.score;
                 }
-*/                
-                if (retval.score <= -opponentmove.score) { // Negate; what's bad for opponent good for us
-                    //cerr << "retval score: " << retval.score << endl;
-                    retval.score = -opponentmove.score;
-                    
-                    //cerr << "opponent score: " << opponentmove.score << endl;
-                    retval.move = testmove;
-                }
-/*                
+
                 if (retval.beta < retval.alpha)
                 {
-                    cerr << "PRUNE" << endl;
+                    cerr << "prune" << endl;
                     break;
                 }
+*/
+                if (retval.score < -opponentmove.score) { // Negate; what's bad for opponent good for us
+                    retval.score = -opponentmove.score;
+                    retval.move = testmove;
+                }
 
-                cerr << "alpha: " << retval.alpha << endl;
-                cerr << "beta: " << retval.beta << endl;            
+                //cerr << "alpha: " << retval.alpha << endl;
+                //cerr << "beta: " << retval.beta << endl;
             }
-*/            
+/*
             if (retval.beta < retval.alpha)
             {
                 break;
             }
+*/
         }
     }
-}
     // std::cerr << "-------------------" << std::endl;
     return retval;
 }
@@ -183,23 +176,11 @@ int Player::getHeuristicWeighting(Board *board, Side side) {
                          {-30,-30, 1, 1, 1, 1,-30, -30},
                          { 30,-30, 20, 20, 20, 20,-30, 30}};
 
-/*
-    int great[] = {0, 7};
-    int good[] = {2, 3, 4, 5};
-    int bad[] = {1, 6};
-
-    int x = move.getX();
-    int y = move.getY();
-    
-*/
     int count = 0;
-    
-
     for(int x = 0; x < 8; x++) {
         for (int y = 0; y < 8; y++) {
-
-            if (((board->get(side, x, y)) && (this->side == BLACK)) ||
-            ((!board->get(side, x, y)) && (this->side == WHITE)))
+            if (((board->get(start_side, x, y)) && (start_side == BLACK)) ||
+                ((board->get(opp_side, x, y)) && (start_side == WHITE))) 
             {
                 count += weights[y][x];
             }
@@ -210,11 +191,5 @@ int Player::getHeuristicWeighting(Board *board, Side side) {
             }
         }
     }
-/*
-    if (side == this->opp_side)
-    {
-        count = -count;
-    }
-*/
     return count;
 }
