@@ -1,7 +1,7 @@
 #include "player.hpp"
 #include "heuristic.hpp"
 
-#define RECURSIVE_DEPTH 6
+#define RECURSIVE_DEPTH 8
 
 /*
  * Constructor for the player; initialize everything here. The side your AI is
@@ -48,12 +48,12 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
 
     if(testingMinimax) {
         minimax_data minmaxedmove = getMinimaxMove(board, start_side, 0,
-            -1000, 1000);
+            -10000, 10000);
         Move *move = new Move(-1,-1);
         move->setX(minmaxedmove.move.getX());
         move->setY(minmaxedmove.move.getY());
         board->doMove(move, start_side);
-        //cerr << move->getX() << " " << move->getY() << endl;
+        cerr << move->getX() << " " << move->getY() << endl;
         return move;
     }
 
@@ -62,7 +62,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
     {
         Board *board2;
         Move *bestmove = new Move(0, 0);
-        int best = -1000;
+        int best = -100000;
 
         // get best move
         for (int i = 0; i < 8; i++)
@@ -108,7 +108,12 @@ minimax_data Player::getMinimaxMove(Board *hypothetical_board, Side side, int de
         int alpha, int beta) {
     if(depth == RECURSIVE_DEPTH) {
         int score = heuristicWithMobility(hypothetical_board, side);
-
+/*
+        // endgame 
+        if (64 - (hypothetical_board->count(side) + hypothetical_board->count(opp_side) < 14)) {
+            score = simpleCount(hypothetical_board, side);
+        }
+*/
         if (RECURSIVE_DEPTH % 2 != 0)
         {
             score *= -1;
@@ -118,11 +123,9 @@ minimax_data Player::getMinimaxMove(Board *hypothetical_board, Side side, int de
         return retval;
     }
 
-<<<<<<< HEAD
-    minimax_data retval = {Move(-1,-1), -10000, alpha, beta}; // An impossibly bad score
-=======
-    minimax_data retval = {Move(-1,-1), -100000000, alpha, beta}; //
->>>>>>> 7ffb3074fd00625d22128b29d2a9553e739dbf2a
+
+    minimax_data retval = {Move(-1,-1), -1000000000, alpha, beta}; //
+
 
     for(int i = 0; i < 8; i++) {
         for (int j = 0; j < 8; j++) {
@@ -142,14 +145,11 @@ minimax_data Player::getMinimaxMove(Board *hypothetical_board, Side side, int de
                     retval.move = testmove;
                 }
 
-<<<<<<< HEAD
-                if (retval.score == -10000)
+                if (retval.score == -1000000000)
                 {
-                    retval.score = getHeuristicWeighting(next_board, side);
+                    retval.score = heuristicWithMobility(next_board, side);
                 }
 
-=======
->>>>>>> 7ffb3074fd00625d22128b29d2a9553e739dbf2a
                 if (opponentmove.score > retval.alpha)
                 {
                     retval.alpha = opponentmove.score;

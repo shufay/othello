@@ -24,10 +24,24 @@ int heuristicWithMobility(Board *board, Side side) {
              else {
                  Move testmove = Move(x,y);
                  if (board->checkMove(&testmove, side)) {
-                     mobility_score ++;
+                    // prioritize inward mobility -- mobility within inner square.
+                     if ((testmove.getX() < 7) && (testmove.getY() < 7)){
+                        mobility_score += 6;
+                     }
+
+                     else {
+                        mobility_score ++;
+                     }
                  }
                  if (board->checkMove(&testmove, otherSide(side))) {
-                     mobility_score --;
+                    // limit opponent's inward mobility.
+                    if ((testmove.getX() < 7) && (testmove.getY() < 7)){
+                        mobility_score -= 10;
+                     }
+
+                     else {
+                        mobility_score -= 3;
+                     }            
                  }
              }
          }
@@ -58,7 +72,6 @@ int getHeuristicWeighting(Board *board, Side side) {
     return count;
 }
 
-int mobility()
 
 /**
  * @brief Counts the number we own minus the ones our opponent owns.
