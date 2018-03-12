@@ -1,7 +1,7 @@
 #include "player.hpp"
 #include "heuristic.hpp"
 
-#define RECURSIVE_DEPTH 6
+#define RECURSIVE_DEPTH 8
 
 /*
  * Constructor for the player; initialize everything here. The side your AI is
