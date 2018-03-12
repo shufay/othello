@@ -1,6 +1,6 @@
 #include "player.hpp"
 
-#define RECURSIVE_DEPTH 3
+#define RECURSIVE_DEPTH 4
 #define otherSide(x) (x == BLACK) ? WHITE : BLACK
 
 /*
@@ -145,6 +145,11 @@ minimax_data Player::getMinimaxMove(Board *hypothetical_board, Side side, int de
                 if (retval.score < -opponentmove.score) { // Negate; what's bad for opponent good for us
                     retval.score = -opponentmove.score;
                     retval.move = testmove;
+                }
+
+                if (retval.score == opponentmove.score)
+                {
+                    retval.score = getHeuristicWeighting(next_board, side);
                 }
 
                 //cerr << "alpha: " << retval.alpha << endl;
