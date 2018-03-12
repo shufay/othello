@@ -4,10 +4,12 @@ SRCLOC      = src
 BINLOC      = bin
 OBJLOC      = obj
 
-OBJS        = $(addprefix $(OBJLOC)/,player.o board.o)
+OBJS        = $(addprefix $(OBJLOC)/,player.o board.o heuristic.o)
 PLAYERNAME  = link_dismissal
 
 all: $(PLAYERNAME) testgame
+
+tests: testminimax testheuristic
 
 $(PLAYERNAME): $(OBJS) $(OBJLOC)/wrapper.o
 	$(CC) -o $(BINLOC)/$@ $^
@@ -18,8 +20,10 @@ testgame:  $(OBJLOC)/testgame.o
 testminimax: $(OBJS) $(OBJLOC)/testminimax.o
 	$(CC) -o $(BINLOC)/$@ $^
 
+testheuristic: $(OBJS) $(OBJLOC)/testheuristic.o
+	$(CC) -o $(BINLOC)/$@ $^
+
 $(OBJLOC)/%.o: $(SRCLOC)/%.cpp
-	echo hello
 	$(CC) -c $(CFLAGS) -x c++ $< -o $@
 
 java:

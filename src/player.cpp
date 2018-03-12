@@ -1,7 +1,7 @@
 #include "player.hpp"
+#include "heuristic.hpp"
 
 #define RECURSIVE_DEPTH 6
-#define otherSide(x) (x == BLACK) ? WHITE : BLACK
 
 /*
  * Constructor for the player; initialize everything here. The side your AI is
@@ -109,7 +109,7 @@ minimax_data Player::getMinimaxMove(Board *hypothetical_board, Side side, int de
     // std::cerr << "new call: " << (side==BLACK) << " " << depth << std::endl;
     // hypothetical_board->print_board();
     if(depth == RECURSIVE_DEPTH) {
-        int score = Player::getHeuristicWeighting(hypothetical_board, side);
+        int score = getHeuristicWeighting(hypothetical_board, side);
 
         if (RECURSIVE_DEPTH % 2 != 0)
         {
@@ -169,32 +169,4 @@ minimax_data Player::getMinimaxMove(Board *hypothetical_board, Side side, int de
 
 void Player::setBoard(Board *board) {
     this->board = board;
-}
-
-int Player::getHeuristicWeighting(Board *board, Side side) {
-    int weights[8][8] = {{ 30,-30, 20, 20, 20, 20,-30, 30},
-                         {-30,-30, 1, 1, 1, 1,-30, -30},
-                         { 20, 1, 1, 1, 1, 1, 1, 20},
-                         { 20, 1, 1, 1, 1, 1, 1, 20},
-                         { 20, 1, 1, 1, 1, 1, 1, 20},
-                         { 20, 1, 1, 1, 1, 1, 1, 20},
-                         {-30,-30, 1, 1, 1, 1,-30, -30},
-                         { 30,-30, 20, 20, 20, 20,-30, 30}};
-
-    int count = 0;
-    for(int x = 0; x < 8; x++) {
-        for (int y = 0; y < 8; y++) {
-            if (((board->get(start_side, x, y)) && (start_side == BLACK)) ||
-                ((board->get(opp_side, x, y)) && (start_side == WHITE)))
-            {
-                count += weights[y][x];
-            }
-
-            else if (board->occupied(x, y))
-            {
-                count -= weights[y][x];
-            }
-        }
-    }
-    return count;
 }
