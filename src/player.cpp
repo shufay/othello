@@ -1,7 +1,7 @@
 #include "player.hpp"
 #include "heuristic.hpp"
 
-#define RECURSIVE_DEPTH 8
+#define RECURSIVE_DEPTH 6
 
 /*
  * Constructor for the player; initialize everything here. The side your AI is
@@ -76,7 +76,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
                     board2 = board->copy();
                     board2->doMove(&move, start_side);
 
-                    int count = getHeuristicWeighting(board2, start_side);
+                    int count = heuristicWithMobility(board2, start_side);
 
                     if (count > best)
                     {
@@ -106,10 +106,8 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
  */
 minimax_data Player::getMinimaxMove(Board *hypothetical_board, Side side, int depth,
         int alpha, int beta) {
-    // std::cerr << "new call: " << (side==BLACK) << " " << depth << std::endl;
-    // hypothetical_board->print_board();
     if(depth == RECURSIVE_DEPTH) {
-        int score = getHeuristicWeighting(hypothetical_board, side);
+        int score = heuristicWithMobility(hypothetical_board, side);
 
         if (RECURSIVE_DEPTH % 2 != 0)
         {
@@ -120,7 +118,7 @@ minimax_data Player::getMinimaxMove(Board *hypothetical_board, Side side, int de
         return retval;
     }
 
-    minimax_data retval = {Move(-1,-1), -1000, alpha, beta}; // An impossibly bad score
+    minimax_data retval = {Move(-1,-1), -100000000, alpha, beta}; //
 
     for(int i = 0; i < 8; i++) {
         for (int j = 0; j < 8; j++) {
@@ -135,35 +133,35 @@ minimax_data Player::getMinimaxMove(Board *hypothetical_board, Side side, int de
 
                 delete next_board;
 
-                if (retval.score < opponentmove.score) { // Negate; what's bad for opponent good for us
+                if (retval.score < opponentmove.score) {
                     retval.score = opponentmove.score;
                     retval.move = testmove;
-                }
-
-                if (retval.score == -1000)
-                {
-                    retval.score = getHeuristicWeighting(next_board, side);
                 }
 
                 if (opponentmove.score > retval.alpha)
                 {
                     retval.alpha = opponentmove.score;
-
                 }
-
                 if (retval.beta <= retval.score)
                 {
-                    cerr << "PRUNE" << endl;
                     retval.score = retval.beta;
                     return retval;
                 }
-
-                //cerr << "alpha: " << retval.alpha << endl;
-                //cerr << "beta: " << retval.beta << endl;
             }
         }
     }
-    // std::cerr << "-------------------" << std::endl;
+    if(retval.move.getX() == -1) {
+        //There are no available moves; This is a victory or a loss.
+        int finalScore = heuristicWithMobility(hypothetical_board, side);
+        if(finalScore > 0) { // TODO: Prefer draws over losses
+            retval.score = 100000000 + finalScore;
+            // Wins are always better than any other board state, but win with style if we can.
+            // (adding finalScore still makes us prefer winning with as many stones as possible)
+        } else {
+            retval.score = -100000000 + finalScore;
+            // Lose with grace if we can.
+        }
+    }
     return retval;
 }
 
