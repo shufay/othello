@@ -1,6 +1,9 @@
 *.o
 *.class
 *.swp
+player2.cpp
 testgame
 player
 testminimax
+link_dismissal
+

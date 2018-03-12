@@ -1,6 +1,6 @@
 #include "player.hpp"
 
-#define RECURSIVE_DEPTH 3
+#define RECURSIVE_DEPTH 4
 #define otherSide(x) (x == BLACK) ? WHITE : BLACK
 
 /*
@@ -53,6 +53,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
         move->setX(minmaxedmove.move.getX());
         move->setY(minmaxedmove.move.getY());
         board->doMove(move, side);
+        cerr << "(" << move->getX() << ", " << move->getY() << ")" << endl;
         return move;
     }
 
@@ -63,7 +64,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
         Move *bestmove = new Move(0, 0);
         int best = -1000;
 
-        // get valid moves
+        // get best move
         for (int i = 0; i < 8; i++)
         {
             for (int j = 0; j < 8; j++)
@@ -109,9 +110,11 @@ minimax_data Player::getMinimaxMove(Board *hypothetical_board, Side side, int de
     if(depth == RECURSIVE_DEPTH) {
         int score = Player::getHeuristicWeighting(hypothetical_board, side);
         minimax_data retval = {Move(-1,-1), score};
+        //cerr << "score: " << retval.score << endl;
         return retval;
     }
-    minimax_data retval = {Move(-1,-1), -65}; // An impossibly bad score
+    minimax_data retval = {Move(-1,-1), -1000, -1000, 1000}; // An impossibly bad score
+    
     for(int i = 0; i < 8; i++) {
         for (int j = 0; j < 8; j++) {
             Move testmove = Move(i, j);
@@ -120,24 +123,48 @@ minimax_data Player::getMinimaxMove(Board *hypothetical_board, Side side, int de
                 Board *next_board = hypothetical_board->copy();
                 next_board->doMove(&testmove, side);
                 minimax_data opponentmove = getMinimaxMove(next_board, otherSide(side), depth+1);
+                //cerr << "opponent score: " << opponentmove.score << endl;
+                delete next_board;
+/*
+                if ((side == this->side) && 
+                    (opponentmove.score > retval.alpha))
+                {
 
-                if (opponentmove.score == -65) {
-                    opponentmove.score = next_board->count(side) - next_board->count(otherSide(side));
-                    // If the opponent's move is -1,-1, then there are no valid moves. That means
-                    // the game is over and the score after this round is the final score.
-                    // TODO: If this is positive, we've won. Just follow this path to victory.
-                    // std::cerr << "  Found game end with " << opponentmove.score << std::endl;
-
+                    retval.alpha = opponentmove.score;
                 }
 
-                delete next_board;
-                if (retval.score < -opponentmove.score) { // Negate; what's bad for opponent good for us
+                else if ((side == otherSide(this->side)) &&
+                    (opponentmove.score < retval.beta))
+                {
+
+                    retval.beta = opponentmove.score;
+                }
+*/                
+                if (retval.score <= -opponentmove.score) { // Negate; what's bad for opponent good for us
+                    //cerr << "retval score: " << retval.score << endl;
                     retval.score = -opponentmove.score;
+                    
+                    //cerr << "opponent score: " << opponentmove.score << endl;
                     retval.move = testmove;
                 }
+/*                
+                if (retval.beta < retval.alpha)
+                {
+                    cerr << "PRUNE" << endl;
+                    break;
+                }
+
+                cerr << "alpha: " << retval.alpha << endl;
+                cerr << "beta: " << retval.beta << endl;            
+            }
+*/            
+            if (retval.beta < retval.alpha)
+            {
+                break;
             }
         }
     }
+}
     // std::cerr << "-------------------" << std::endl;
     return retval;
 }
@@ -156,16 +183,38 @@ int Player::getHeuristicWeighting(Board *board, Side side) {
                          {-30,-30, 1, 1, 1, 1,-30, -30},
                          { 30,-30, 20, 20, 20, 20,-30, 30}};
 
+/*
+    int great[] = {0, 7};
+    int good[] = {2, 3, 4, 5};
+    int bad[] = {1, 6};
+
+    int x = move.getX();
+    int y = move.getY();
+    
+*/
     int count = 0;
+    
+
     for(int x = 0; x < 8; x++) {
         for (int y = 0; y < 8; y++) {
-            if (board->get(side, x, y)) {
+
+            if (((board->get(side, x, y)) && (this->side == BLACK)) ||
+            ((!board->get(side, x, y)) && (this->side == WHITE)))
+            {
                 count += weights[y][x];
             }
-            if (board->get(otherSide(side), x, y)) {
+
+            else if (board->occupied(x, y)) 
+            {
                 count -= weights[y][x];
             }
         }
     }
+/*
+    if (side == this->opp_side)
+    {
+        count = -count;
+    }
+*/
     return count;
 }
