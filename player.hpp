@@ -9,7 +9,7 @@
 
 struct minimax_data {
     Move move;
-    int score;
+    int score, alpha, beta;
 };
 
 class Player {
