@@ -53,7 +53,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
         move->setX(minmaxedmove.move.getX());
         move->setY(minmaxedmove.move.getY());
         board->doMove(move, start_side);
-        cerr << move->getX() << " " << move->getY() << endl;
+        //cerr << move->getX() << " " << move->getY() << endl;
         return move;
     }
 
@@ -120,7 +120,7 @@ minimax_data Player::getMinimaxMove(Board *hypothetical_board, Side side, int de
         return retval;
     }
 
-    minimax_data retval = {Move(-1,-1), -1000, alpha, beta}; // An impossibly bad score
+    minimax_data retval = {Move(-1,-1), -10000, alpha, beta}; // An impossibly bad score
 
     for(int i = 0; i < 8; i++) {
         for (int j = 0; j < 8; j++) {
@@ -140,7 +140,7 @@ minimax_data Player::getMinimaxMove(Board *hypothetical_board, Side side, int de
                     retval.move = testmove;
                 }
 
-                if (retval.score == -1000)
+                if (retval.score == -10000)
                 {
                     retval.score = getHeuristicWeighting(next_board, side);
                 }

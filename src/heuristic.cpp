@@ -28,6 +28,8 @@ int getHeuristicWeighting(Board *board, Side side) {
     return count;
 }
 
+int mobility()
+
 /**
  * @brief Counts the number we own minus the ones our opponent owns.
  * TODO: This can be optimized but since it's already so fast idk if it's needed.
