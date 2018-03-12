@@ -47,7 +47,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
     board->doMove(opponentsMove, opp_side);
 
     if(testingMinimax) {
-        minimax_data minmaxedmove = getMinimaxMove(board, start_side, 0, 
+        minimax_data minmaxedmove = getMinimaxMove(board, start_side, 0,
             -1000, 1000);
         Move *move = new Move(-1,-1);
         move->setX(minmaxedmove.move.getX());
@@ -121,7 +121,7 @@ minimax_data Player::getMinimaxMove(Board *hypothetical_board, Side side, int de
     }
 
     minimax_data retval = {Move(-1,-1), -1000, alpha, beta}; // An impossibly bad score
-    
+
     for(int i = 0; i < 8; i++) {
         for (int j = 0; j < 8; j++) {
             Move testmove = Move(i, j);
@@ -129,7 +129,7 @@ minimax_data Player::getMinimaxMove(Board *hypothetical_board, Side side, int de
                 //std::cerr << "  Valid move at" << testmove.getX() << " " << testmove.getY() << std::endl;
                 Board *next_board = hypothetical_board->copy();
                 next_board->doMove(&testmove, side);
-                minimax_data opponentmove = getMinimaxMove(next_board, otherSide(side), depth+1, 
+                minimax_data opponentmove = getMinimaxMove(next_board, otherSide(side), depth+1,
                     -retval.beta, -retval.alpha);
                 opponentmove.score *= -1;
 
@@ -185,12 +185,12 @@ int Player::getHeuristicWeighting(Board *board, Side side) {
     for(int x = 0; x < 8; x++) {
         for (int y = 0; y < 8; y++) {
             if (((board->get(start_side, x, y)) && (start_side == BLACK)) ||
-                ((board->get(opp_side, x, y)) && (start_side == WHITE))) 
+                ((board->get(opp_side, x, y)) && (start_side == WHITE)))
             {
                 count += weights[y][x];
             }
 
-            else if (board->occupied(x, y)) 
+            else if (board->occupied(x, y))
             {
                 count -= weights[y][x];
             }

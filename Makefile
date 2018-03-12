@@ -1,20 +1,25 @@
 CC          = g++
 CFLAGS      = -std=c++11 -Wall -pedantic -O3
-OBJS        = player.o board.o
+SRCLOC      = src
+BINLOC      = bin
+OBJLOC      = obj
+
+OBJS        = $(addprefix $(OBJLOC)/,player.o board.o)
 PLAYERNAME  = link_dismissal
 
 all: $(PLAYERNAME) testgame
 
-$(PLAYERNAME): $(OBJS) wrapper.o
-	$(CC) -o $@ $^
+$(PLAYERNAME): $(OBJS) $(OBJLOC)/wrapper.o
+	$(CC) -o $(BINLOC)/$@ $^
 
-testgame: testgame.o
-	$(CC) -o $@ $^
+testgame:  $(OBJLOC)/testgame.o
+	$(CC) -o $(BINLOC)/$@ $^
 
-testminimax: $(OBJS) testminimax.o
-	$(CC) -o $@ $^
+testminimax: $(OBJS) $(OBJLOC)/testminimax.o
+	$(CC) -o $(BINLOC)/$@ $^
 
-%.o: %.cpp
+$(OBJLOC)/%.o: $(SRCLOC)/%.cpp
+	echo hello
 	$(CC) -c $(CFLAGS) -x c++ $< -o $@
 
 java:
@@ -24,6 +29,6 @@ cleanjava:
 	make -C java/ clean
 
 clean:
-	rm -f *.o $(PLAYERNAME) testgame testminimax
+	rm -f bin/* obj/*
 
 .PHONY: java testminimax
