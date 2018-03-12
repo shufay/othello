@@ -1,6 +1,6 @@
 #include "player.hpp"
 
-#define RECURSIVE_DEPTH 4
+#define RECURSIVE_DEPTH 6
 #define otherSide(x) (x == BLACK) ? WHITE : BLACK
 
 /*
@@ -19,7 +19,6 @@ Player::Player(Side side) {
     this->start_side = side;
     this->opp_side = (side == WHITE) ? BLACK : WHITE;
     this->board = new Board();
-
 }
 
 /*
@@ -48,11 +47,13 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
     board->doMove(opponentsMove, opp_side);
 
     if(testingMinimax) {
-        minimax_data minmaxedmove = getMinimaxMove(board, start_side, 0);
+        minimax_data minmaxedmove = getMinimaxMove(board, start_side, 0, 
+            -1000, 1000);
         Move *move = new Move(-1,-1);
         move->setX(minmaxedmove.move.getX());
         move->setY(minmaxedmove.move.getY());
         board->doMove(move, start_side);
+        cerr << move->getX() << " " << move->getY() << endl;
         return move;
     }
 
@@ -103,64 +104,63 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
  * @param side the side that is currently being calculated
  * @param depth the current depth (0 to start)
  */
-minimax_data Player::getMinimaxMove(Board *hypothetical_board, Side side, int depth) {
+minimax_data Player::getMinimaxMove(Board *hypothetical_board, Side side, int depth,
+        int alpha, int beta) {
     // std::cerr << "new call: " << (side==BLACK) << " " << depth << std::endl;
     // hypothetical_board->print_board();
     if(depth == RECURSIVE_DEPTH) {
         int score = Player::getHeuristicWeighting(hypothetical_board, side);
+
+        if (RECURSIVE_DEPTH % 2 != 0)
+        {
+            score *= -1;
+        }
+
         minimax_data retval = {Move(-1,-1), score};
         return retval;
     }
 
-    minimax_data retval = {Move(-1,-1), -1000, -1000, 1000}; // An impossibly bad score
+    minimax_data retval = {Move(-1,-1), -1000, alpha, beta}; // An impossibly bad score
     
     for(int i = 0; i < 8; i++) {
         for (int j = 0; j < 8; j++) {
             Move testmove = Move(i, j);
             if (hypothetical_board->checkMove(&testmove, side)) {
-                // std::cerr << "  Valid move at" << testmove.getX() << " " << testmove.getY() << std::endl;
+                //std::cerr << "  Valid move at" << testmove.getX() << " " << testmove.getY() << std::endl;
                 Board *next_board = hypothetical_board->copy();
                 next_board->doMove(&testmove, side);
-                minimax_data opponentmove = getMinimaxMove(next_board, otherSide(side), depth+1);
+                minimax_data opponentmove = getMinimaxMove(next_board, otherSide(side), depth+1, 
+                    -retval.beta, -retval.alpha);
+                opponentmove.score *= -1;
+
                 delete next_board;
-/*
-                if (side == this->side && 
-                    opponentmove.score > retval.alpha)
-                {
-                    retval.alpha = opponentmove.score;
-                }
 
-                else if (side == otherSide(this->side) && 
-                    opponentmove.score < retval.beta)
-                {
-                    retval.beta = opponentmove.score;
-                }
-
-                if (retval.beta < retval.alpha)
-                {
-                    cerr << "prune" << endl;
-                    break;
-                }
-*/
-                if (retval.score < -opponentmove.score) { // Negate; what's bad for opponent good for us
-                    retval.score = -opponentmove.score;
+                if (retval.score < opponentmove.score) { // Negate; what's bad for opponent good for us
+                    retval.score = opponentmove.score;
                     retval.move = testmove;
                 }
 
-                if (retval.score == opponentmove.score)
+                if (retval.score == -1000)
                 {
                     retval.score = getHeuristicWeighting(next_board, side);
+                }
+
+                if (opponentmove.score > retval.alpha)
+                {
+                    retval.alpha = opponentmove.score;
+
+                }
+
+                if (retval.beta <= retval.score)
+                {
+                    cerr << "PRUNE" << endl;
+                    retval.score = retval.beta;
+                    return retval;
                 }
 
                 //cerr << "alpha: " << retval.alpha << endl;
                 //cerr << "beta: " << retval.beta << endl;
             }
-/*
-            if (retval.beta < retval.alpha)
-            {
-                break;
-            }
-*/
         }
     }
     // std::cerr << "-------------------" << std::endl;
