@@ -2,6 +2,7 @@
 #define __PLAYER_H__
 
 #include <iostream>
+#include <time.h>
 #include "common.hpp"
 #include "board.hpp"
 
@@ -9,21 +10,20 @@
 
 struct minimax_data {
     Move move;
-    int score, alpha, beta;
+    int score, alpha, beta, mobility;
 };
 
 class Player {
 private:
-    minimax_data getMinimaxMove(Board *board, Side side, int depth);
-    int getHeuristicWeighting(Board *board, Side side);
-    Side side;
+    minimax_data getMinimaxMove(Board *board, Side side, int depth,
+        int alpha, int beta);
+    Side start_side;
     Side opp_side;
     Board *board;
 
 public:
     Player(Side side);
     ~Player();
-
     Move *doMove(Move *opponentsMove, int msLeft);
     void setBoard(Board *board);
 
