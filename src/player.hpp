@@ -2,6 +2,7 @@
 #define __PLAYER_H__
 
 #include <iostream>
+#include <time.h>
 #include "common.hpp"
 #include "board.hpp"
 
@@ -9,7 +10,7 @@
 
 struct minimax_data {
     Move move;
-    int score, alpha, beta;
+    int score, alpha, beta, mobility;
 };
 
 class Player {

@@ -2,7 +2,7 @@
 #include "heuristic.hpp"
 
 #define RECURSIVE_DEPTH 20
-#define TIME 5
+#define TIME 4
 
 /*
  * Constructor for the player; initialize everything here. The side your AI is
@@ -57,14 +57,14 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
 
     if(testingMinimax) {
         while (left < TIME) {    
-            cerr << "time left: " << TIME - left << endl;
+            //cerr << "time left: " << TIME - left << endl;
             minimax_data minmaxedmove = getMinimaxMove(board, start_side, iter,
                 -10000, 10000);
             move->setX(minmaxedmove.move.getX());
             move->setY(minmaxedmove.move.getY());
 
             //cerr << move->getX() << " " << move->getY() << endl;
-            cerr << "ITER: " << RECURSIVE_DEPTH - iter << endl;
+            //cerr << "ITER: " << RECURSIVE_DEPTH - iter << endl;
             iter --;
 
             if (iter < 0)
