@@ -53,7 +53,8 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
 
     board->doMove(opponentsMove, opp_side);
     Move *move = new Move(-1, -1);
-    int iter = RECURSIVE_DEPTH - 3;
+
+    int iter = RECURSIVE_DEPTH - 6; // Start at 6 iterations, and always do at least that.
 
     if(testingMinimax) {
         while (left < TIME) {    
