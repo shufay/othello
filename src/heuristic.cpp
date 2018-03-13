@@ -9,7 +9,7 @@
 bool isInterior(Move *move) {
     int x = move->getX();
     int y = move->getY();
-    return x >= 1 && x <= 6 && y >= 1 && y <= 6;
+    return x >= 2 && x <= 6 && y >= 2 && y <= 6;
 }
 
  /**

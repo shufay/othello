@@ -53,18 +53,18 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
 
     board->doMove(opponentsMove, opp_side);
     Move *move = new Move(-1, -1);
-    int iter = RECURSIVE_DEPTH - 1;
+    int iter = RECURSIVE_DEPTH - 3;
 
     if(testingMinimax) {
         while (left < TIME) {    
-            //cerr << "time left: " << TIME - left << endl;
+            cerr << "time left: " << TIME - left << endl;
             minimax_data minmaxedmove = getMinimaxMove(board, start_side, iter,
                 -10000, 10000);
             move->setX(minmaxedmove.move.getX());
             move->setY(minmaxedmove.move.getY());
 
             //cerr << move->getX() << " " << move->getY() << endl;
-            //cerr << "ITER: " << RECURSIVE_DEPTH - iter << endl;
+            cerr << "ITER: " << RECURSIVE_DEPTH - iter << endl;
             iter --;
 
             if (iter < 0)
@@ -132,12 +132,7 @@ minimax_data Player::getMinimaxMove(Board *hypothetical_board, Side side, int de
         int alpha, int beta) {
     if(depth == RECURSIVE_DEPTH) {
         int score = heuristicWithMobility(hypothetical_board, side);
-/*
-        // endgame 
-        if (64 - (hypothetical_board->count(side) + hypothetical_board->count(opp_side) < 14)) {
-            score = simpleCount(hypothetical_board, side);
-        }
-*/
+
         if (RECURSIVE_DEPTH % 2 != 0)
         {
             score *= -1;
