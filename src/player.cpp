@@ -1,7 +1,8 @@
 #include "player.hpp"
 #include "heuristic.hpp"
 
-#define RECURSIVE_DEPTH 8
+#define RECURSIVE_DEPTH 20
+#define TIME 5
 
 /*
  * Constructor for the player; initialize everything here. The side your AI is
@@ -47,6 +48,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
     // iterative deepening
     time_t begin;
     time_t end;
+    double left;
     time(&begin);
 
     board->doMove(opponentsMove, opp_side);
@@ -54,13 +56,15 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
     int iter = RECURSIVE_DEPTH - 1;
 
     if(testingMinimax) {
-        while (difftime(begin, end) < msLeft) {    
+        while (left < TIME) {    
+            cerr << "time left: " << TIME - left << endl;
             minimax_data minmaxedmove = getMinimaxMove(board, start_side, iter,
                 -10000, 10000);
             move->setX(minmaxedmove.move.getX());
             move->setY(minmaxedmove.move.getY());
 
             //cerr << move->getX() << " " << move->getY() << endl;
+            cerr << "ITER: " << RECURSIVE_DEPTH - iter << endl;
             iter --;
 
             if (iter < 0)
@@ -69,6 +73,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
             }
 
             time(&end);
+            left = difftime(end, begin);
         }
 
         board->doMove(move, start_side);

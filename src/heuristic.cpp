@@ -26,7 +26,7 @@ int heuristicWithMobility(Board *board, Side side) {
                  if (board->checkMove(&testmove, side)) {
                     // prioritize inward mobility -- mobility within inner square.
                      if ((abs(testmove.getX()-4) < 3) && (abs(testmove.getY()-4) < 3)) {
-                        mobility_score += 8;
+                        mobility_score += 6;
                      }
 
                      else {
@@ -36,11 +36,11 @@ int heuristicWithMobility(Board *board, Side side) {
                  if (board->checkMove(&testmove, otherSide(side))) {
                     // limit opponent's inward mobility.
                     if ((abs(testmove.getX()-4) < 3) && (abs(testmove.getY()-4) < 3)) {
-                        mobility_score -= 12;
+                        mobility_score -= 15;
                      }
 
                      else {
-                        mobility_score -= 3;
+                        mobility_score -= 5;
                      }            
                  }
              }
