@@ -12,8 +12,8 @@ Heuristic function using:
     Very heavy priority on mobility:
         +3 points for each reachable space on cells with 1 < x, y < 7.
         +18 points for each reachable space on other cells.
-        -45 points for each reachable space on cells with 1 < x, y < 7.
-        -15 points for each reachable space on other cells.
+        -45 points for each opponent reachable space on cells with 1 < x, y < 7.
+        -15 points for each opponent reachable space on other cells.
     When a victory or loss is detected, it is valued more highly than any
         normal heuristic value, but the bot tries to find the victory that
         gives the highest score overall as well.
