@@ -5,6 +5,13 @@
  * heuristic(board, BLACK) == -heuristic(board, WHITE) should generally hold.
  */
 
+
+bool isInterior(Move *move) {
+    int x = move->getX();
+    int y = move->getY();
+    return x >= 1 && x <= 6 && y >= 1 && y <= 6;
+}
+
  /**
   * @brief an even smarter heuristic that prioritizes taking corners and ensuring mobility.
   * @param board a pointer to a board state.
@@ -25,23 +32,22 @@ int heuristicWithMobility(Board *board, Side side) {
                  Move testmove = Move(x,y);
                  if (board->checkMove(&testmove, side)) {
                     // prioritize inward mobility -- mobility within inner square.
-                     if ((abs(testmove.getX()-4) < 3) && (abs(testmove.getY()-4) < 3)) {
+                     if (isInterior(&testmove)) {
                         mobility_score += 6;
                      }
-
                      else {
                         mobility_score ++;
                      }
                  }
                  if (board->checkMove(&testmove, otherSide(side))) {
                     // limit opponent's inward mobility.
-                    if ((abs(testmove.getX()-4) < 3) && (abs(testmove.getY()-4) < 3)) {
+                    if (isInterior(&testmove)) {
                         mobility_score -= 15;
                      }
 
                      else {
                         mobility_score -= 5;
-                     }            
+                     }
                  }
              }
          }

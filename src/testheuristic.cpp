@@ -51,6 +51,16 @@ int main(int argc, char *argv[]) {
               << " | Heuristic weight black: " << getHeuristicWeighting(board2, BLACK) << std::endl;
     std::cout << std::endl;
 
+    Move move1 = Move(0,0);
+    Move move2 = Move(1,0);
+    Move move3 = Move(1,1);
+    Move move4 = Move(7,0);
+
+    std::cout << "(0,0) is interior: " << isInterior(&move1) << std::endl;
+    std::cout << "(1,0) is interior: " << isInterior(&move2) << std::endl;
+    std::cout << "(1,1) is interior: " << isInterior(&move3) << std::endl;
+    std::cout << "(7,0) is interior: " << isInterior(&move4) << std::endl;
+
     delete board1;
     delete board2;
     return 0;
