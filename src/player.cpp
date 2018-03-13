@@ -44,16 +44,34 @@ Player::~Player() {
 Move *Player::doMove(Move *opponentsMove, int msLeft) {
     // testingMinimax = true;
     // update board according to oppoent move
+    // iterative deepening
+    time_t begin;
+    time_t end;
+    time(&begin);
+
     board->doMove(opponentsMove, opp_side);
+    Move *move = new Move(-1, -1);
+    int iter = RECURSIVE_DEPTH - 1;
 
     if(testingMinimax) {
-        minimax_data minmaxedmove = getMinimaxMove(board, start_side, 0,
-            -10000, 10000);
-        Move *move = new Move(-1,-1);
-        move->setX(minmaxedmove.move.getX());
-        move->setY(minmaxedmove.move.getY());
+        while (difftime(begin, end) < msLeft) {    
+            minimax_data minmaxedmove = getMinimaxMove(board, start_side, iter,
+                -10000, 10000);
+            move->setX(minmaxedmove.move.getX());
+            move->setY(minmaxedmove.move.getY());
+
+            //cerr << move->getX() << " " << move->getY() << endl;
+            iter --;
+
+            if (iter < 0)
+            {
+                break;
+            }
+
+            time(&end);
+        }
+
         board->doMove(move, start_side);
-        cerr << move->getX() << " " << move->getY() << endl;
         return move;
     }
 
@@ -95,6 +113,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
     }
 
     return nullptr;
+    time(&end);
 }
 
 /**

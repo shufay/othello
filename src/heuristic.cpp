@@ -26,7 +26,7 @@ int heuristicWithMobility(Board *board, Side side) {
                  if (board->checkMove(&testmove, side)) {
                     // prioritize inward mobility -- mobility within inner square.
                      if ((abs(testmove.getX()-4) < 3) && (abs(testmove.getY()-4) < 3)) {
-                        mobility_score += 6;
+                        mobility_score += 8;
                      }
 
                      else {
